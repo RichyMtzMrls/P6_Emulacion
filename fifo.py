@@ -1,7 +1,6 @@
 import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 import random
-import os
 
 class Proceso:
     def __init__(self, nombre, llegada, ejecucion):
@@ -14,7 +13,7 @@ class Proceso:
         self.retorno = 0
         self.espera = 0
 
-class PlanificadorSJF:
+class PlanificadorFIFO:
     def __init__(self, procesos):
         self.procesos = sorted(procesos, key=lambda p: p.llegada)
         self.tiempo_maximo = 0
@@ -45,7 +44,6 @@ class PlanificadorSJF:
                 self.historial_estados[cpu.nombre].append('E')
 
             if not cpu and cola:
-                cola.sort(key=lambda p: p.ejecucion)
                 cpu = cola.pop(0)
                 if cpu.comienzo == -1:
                     cpu.comienzo = tiempo
@@ -54,7 +52,7 @@ class PlanificadorSJF:
             estado_cola_actual = []
             for p in reversed(cola):
                 self.historial_estados[p.nombre].append('L')
-                estado_cola_actual.append(f"{p.nombre}{p.ejecucion}")
+                estado_cola_actual.append(p.nombre)
             
             self.historial_cola.append(estado_cola_actual)
 
@@ -73,7 +71,7 @@ class PlanificadorSJF:
 class Aplicacion(tk.Tk):
     def __init__(self):
         super().__init__()
-        self.title("Simulador SJF - Proyecto Sistemas Operativos 3")
+        self.title("Simulador FIFO (FCFS) - Sistemas Operativos")
         self.geometry("1100x700")
         self.configure(bg="#f0f0f0")
         self.crear_interfaz()
@@ -93,14 +91,18 @@ class Aplicacion(tk.Tk):
             self.tree.heading(col, text=col)
             self.tree.column(col, anchor=tk.CENTER, width=100)
         self.tree.pack(fill=tk.X, padx=20, pady=10)
+        
         self.lbl_promedios = tk.Label(self, text="T. Medio Retorno: 0.00 | T. Medio Espera: 0.00", font=("Arial", 12, "bold"), bg="#f0f0f0")
         self.lbl_promedios.pack()
+        
         frame_gantt = tk.Frame(self)
         frame_gantt.pack(fill=tk.BOTH, expand=True, padx=20, pady=10)
+        
         self.canvas = tk.Canvas(frame_gantt, bg="white")
         scrollbar_x = ttk.Scrollbar(frame_gantt, orient="horizontal", command=self.canvas.xview)
         scrollbar_y = ttk.Scrollbar(frame_gantt, orient="vertical", command=self.canvas.yview)
         self.canvas.configure(xscrollcommand=scrollbar_x.set, yscrollcommand=scrollbar_y.set)
+        
         scrollbar_x.pack(side=tk.BOTTOM, fill=tk.X)
         scrollbar_y.pack(side=tk.RIGHT, fill=tk.Y)
         self.canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
@@ -200,7 +202,7 @@ class Aplicacion(tk.Tk):
         self.ejecutar_simulacion(procesos)
 
     def ejecutar_simulacion(self, procesos):
-        sim = PlanificadorSJF(procesos)
+        sim = PlanificadorFIFO(procesos)
         
         for fila in self.tree.get_children():
             self.tree.delete(fila)
@@ -246,7 +248,7 @@ class Aplicacion(tk.Tk):
             for nivel, texto_proceso in enumerate(estado_cola):
                 y = margen_y - 25 - (nivel * celda_h)
                 self.canvas.create_rectangle(x, y - celda_h, x + celda_w, y, fill="#cfe2f3", outline="gray")
-                self.canvas.create_text(x + celda_w/2, y - celda_h/2, text=texto_proceso, font=("Arial", 8))
+                self.canvas.create_text(x + celda_w/2, y - celda_h/2, text=texto_proceso, font=("Arial", 8, "bold"))
 
         for i, p in enumerate(procesos_ordenados):
             y = margen_y + (i * celda_h)
