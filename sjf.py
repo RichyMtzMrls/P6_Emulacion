@@ -274,4 +274,8 @@ class Aplicacion(tk.Tk):
 
 if __name__ == "__main__":
     app = Aplicacion()
+<<<<<<< HEAD
     app.mainloop()
+=======
+    app.mainloop()
+>>>>>>> 44c3d69e32b40f4c7c076b32c3a4cf744c57d17a
